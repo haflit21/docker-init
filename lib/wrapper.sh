@@ -72,10 +72,10 @@ function console()
 
 cat <<EOF >> $current_path/docker/console
 #! /bin/bash
-echo -e "Running command: docker-compose run --user=$user $container php $file \$@"
+echo -e "Running command: docker-compose exec --user=$user $container php $file \$@"
 echo -e "...............\n\n"
 
-eval "docker-compose run --user=$user $container php $file \$@"
+eval "docker-compose exec --user=$user $container php $file \$@"
 EOF
 
         chmod +x $current_path/docker/console
@@ -158,10 +158,10 @@ function composer()
 
 cat <<EOF >> $current_path/docker/composer
 #!/bin/bash
-echo -e "Running command: docker-compose run --user=$user $container composer \$@ --working-dir=$working_dir"
+echo -e "Running command: docker-compose exec --user=$user $container composer \$@ --working-dir=$working_dir"
 echo -e "...............\n\n"
 
-docker-compose run --user=$user $container composer \$@ --working-dir=$working_dir
+docker-compose exec --user=$user $container composer \$@ --working-dir=$working_dir
 EOF
 
         chmod +x $current_path/docker/composer

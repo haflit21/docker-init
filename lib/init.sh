@@ -35,9 +35,13 @@ init () {
         exit 1;
     fi
 
-    process ${@:2}
+    accepted = [ '--help', 'initiate', 'purge', 'reset', 'resolver', 'clear', 'compose', 'generate-console', 'generate-composer', 'get_config' ]
 
-    exit 1
+    if [[ ${accepted[*]} =~ $1 ]]; then
+        process ${@:2}
+    else
+        process ${@:1}
+    fi
 }
 
 # Process function
@@ -176,8 +180,6 @@ application:
 
 php:
     build: c2is/php-fpm:symfony-composer
-    ports:
-        - {{port.php-fpm}}:9000
     environment:
         - SYMFONY_ENV=dev
     volumes_from:
@@ -195,6 +197,15 @@ apache:
         - application
     volumes:
         - ./docker/logs/apache/:/var/log/apache2
+
+mysql:
+    image: mysql:5.6
+    restart: always
+    environment:
+        - MYSQL_ROOT_PASSWORD=96418dc7ed75
+        - MYSQL_PASSWORD=96418dc7ed75
+        - MYSQL_USER=root
+        - MYSQL_DATABASE=symfony
 EOF
         report "info" "$messages_instantiate_docker_compose"
         report "screen" "$messages_instantiate_docker_compose_help"
@@ -203,7 +214,6 @@ EOF
     if [ ! -f "$current_path/docker/dist/parameters.dist" ]; then
         cat <<EOF >> $current_path/docker/dist/parameters.dist
 # ports
-port.php-fpm=9000
 port.apache=81
 
 # database
@@ -212,10 +222,13 @@ database.name=symfony
 database.username=root
 
 # docker
+# On mac
 docker.ip=192.168.99.100
+# On linux
+#docker.ip=172.17.0.1
 EOF
         report "info" "$messages_instantiate_parameters"
-        report "screen" "$$messages_instantiate_parameters_help"
+        report "screen" "$messages_instantiate_parameters_help"
     fi
 }
 
@@ -225,7 +238,7 @@ EOF
 function optional()
 {
     case "$1" in
-    'help' )
+    '--help' )
         help
         exit 0;
         ;;
