@@ -43,6 +43,7 @@ tasks:
   config_resolver: "[dockerinit] Config resolver process"
   replace_config: "[dockerinit] Replace configuration"
   done: "[dockerinit] done"
+  docker_compose: "[dockerinit] docker-compose.yml file generated"
 
 get_config:
   error:

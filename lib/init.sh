@@ -79,10 +79,7 @@ function process()
         parse_config "$dist_path/parameters.dist" "$current_path/docker/parameters" $interaction
     fi
 
-    if [ ! -f "$docker_compose_path" ]; then
-        replace_config "$current_path/docker/parameters" "$dist_path/docker-compose.yml.dist" "$docker_compose_path"
-    fi
-
+    compose_file
     resolver
 
     report "info" "$messages_tasks_done";
@@ -94,6 +91,18 @@ function process()
 function resolver()
 {
     config_resolver "$current_path/docker/parameters"
+}
+
+# Generate docker-compose file
+function compose_file()
+{
+    docker_compose_path=$current_path/docker-compose.yml
+
+    if [ ! -f "$docker_compose_path" ]; then
+        replace_config "$current_path/docker/parameters" "$dist_path/docker-compose.yml.dist" "$docker_compose_path"
+
+        report "info" "$messages_tasks_docker_compose";
+    fi
 }
 
 # Clean up
@@ -236,6 +245,14 @@ function optional()
         ;;
     'clear' )
         clear
+        exit 0
+        ;;
+    'compose' )
+        if [ -f $current_path/docker-compose.yml ]; then
+            rm -Rf $current_path/docker-compose.yml
+        fi
+
+        compose_file
         exit 0
         ;;
     'generate-console' )
