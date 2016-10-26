@@ -5,11 +5,11 @@ error:
   config_resolver:
     not_found: "The specified file is not found : %s"
 
-instantiate:
+initiate:
   docker_compose: "[dockerinit] Create new file docker/dist/docker-compose.yml.dist"
   docker_compose_help: "Edit this to define containers for your application"
   parameters: "[dockerinit] Create new file docker/dist/parameters.dist"
-  parameters_help: "Edit this file to define dockerinit parameters"
+  parameters_help: "Edit this file to define dockerinit parameters. The git username and the git email are required."
 init:
   error:
     exists: "Some config files already exists. Aborting. [found:%s]"

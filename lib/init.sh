@@ -158,7 +158,7 @@ function clear()
 
 # Instantiate
 # Call to create default file for docker
-function instantiate()
+function initiate()
 {
     if [ ! -d "$current_path/docker" ]; then
         mkdir "$current_path/docker"
@@ -179,14 +179,20 @@ application:
     tty: true
 
 php:
-    build: c2is/php-fpm:symfony-composer
+    image: c2is/php-fpm:symfony-composer
     environment:
         - SYMFONY_ENV=dev
+        - GIT_USERNAME={{git.username}}
+        - GIT_EMAIL={{git.email}}
     volumes_from:
         - application
+    links:
+        - mysql:mysql
+    volumes:
+        - {{ssh.folder}}:/var/www/.ssh
 
 apache:
-    build: c2is/apache
+    image: c2is/apache:default
     ports:
         - {{port.apache}}:80
     environment:
@@ -202,33 +208,43 @@ mysql:
     image: mysql:5.6
     restart: always
     environment:
-        - MYSQL_ROOT_PASSWORD=96418dc7ed75
-        - MYSQL_PASSWORD=96418dc7ed75
-        - MYSQL_USER=root
-        - MYSQL_DATABASE=symfony
+        - MYSQL_ROOT_PASSWORD={{database.password}}
+        - MYSQL_PASSWORD={{database.password}}
+        - MYSQL_USER={{database.username}}
+        - MYSQL_DATABASE={{database.name}}
 EOF
-        report "info" "$messages_instantiate_docker_compose"
-        report "screen" "$messages_instantiate_docker_compose_help"
+        report "info" "$messages_initiate_docker_compose"
+        report "screen" "$messages_initiate_docker_compose_help"
     fi
 
     if [ ! -f "$current_path/docker/dist/parameters.dist" ]; then
+        password=$(LC_CTYPE=C tr -dc A-Za-z0-9 < /dev/urandom | head -c 32 | xargs)
+
         cat <<EOF >> $current_path/docker/dist/parameters.dist
 # ports
 port.apache=81
 
 # database
-database.password=96418dc7ed75
+database.password=$password
 database.name=symfony
 database.username=root
+
+# git
+git.username=is_required
+git.email=is_required
+
+# ssh
+ssh.folder=is_required
 
 # docker
 # On mac
 docker.ip=192.168.99.100
 # On linux
+# Run the 'ifconfig' command and check if the ip match
 #docker.ip=172.17.0.1
 EOF
-        report "info" "$messages_instantiate_parameters"
-        report "screen" "$messages_instantiate_parameters_help"
+        report "info" "$messages_initiate_parameters"
+        report "screen" "$messages_initiate_parameters_help"
     fi
 }
 
@@ -243,7 +259,7 @@ function optional()
         exit 0;
         ;;
     'initiate' )
-        instantiate
+        initiate
         exit 0
         ;;
     'purge' )
